@@ -18,20 +18,20 @@ func (x Uint64) String() string{
 var bufErr error = errors.New("The Uint64's variable-length binary encoding can not be put in supplied Buffer.")
 
 // write into the provided []byte the representation of Uint64, implementing io.Writer.
-func (u Uint64) Write(b []byte) (n int , err error){
+func (u *Uint64) Write(b []byte) (n int , err error){
     defer func() {
         if r := recover(); r != nil {
         	err=bufErr
         }
     }()
-	return PutUint64(b,u),nil
+	return PutUint64(b,*u),nil
 }
 
 var encErr error = errors.New("Buffer does not represent a valid binary encoding.")
 
 // read a Uint64 from the provided representation, implementing io.Reader
-func (u *Uint64) Read(b []byte) (int , error){
-	*u=GetUint64(b...)
+func (u Uint64) Read(b []byte) (int , error){
+	u=GetUint64(b...)
 	if len(b)>7 {
 		if b[7]==0xff {return 8,encErr}
 		return 8,nil
