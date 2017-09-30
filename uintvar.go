@@ -2,6 +2,7 @@ package varbinary
 
 import "errors"
 import "fmt"
+import "io"
 
 // variable length binary encoding/decoding of uint64 values.
 // uses all permutations up to the redundant values.
@@ -34,9 +35,9 @@ func (u Uint64) Read(b []byte) (int , error){
 	u=GetUint64(b...)
 	if len(b)>7 {
 		if b[7]==0xff {return 8,encErr}
-		return 8,nil
+		return 8,io.EOF
 	}
-	return len(b),nil
+	return len(b),io.EOF
 }
 
 
