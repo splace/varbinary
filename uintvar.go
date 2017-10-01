@@ -9,7 +9,7 @@ import "io"
 // the length of the encoding carries information, so some binary encodings are redundant (ones high in the 8-byte range) they don’t have a decoding, due to all possible values already have an encoding thanks to that extra information.
 type Uint64 uint64
 
-// string rep as hexadecimal, implementing Sringer
+// string rep as hexadecimal, implementing Stringer
 func (x Uint64) String() string{
 	b:=make([]byte,8,8)
 	n,_:=x.Write(b)

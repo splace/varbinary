@@ -6,15 +6,8 @@ import "fmt"
 
 
 func ExampleUint64_String() {
-	fmt.Println(varbinary.Uint64(0))
-	fmt.Println(varbinary.Uint64(1))
-	fmt.Println(varbinary.Uint64(257))
-	fmt.Println(varbinary.Uint64(65793))
+	fmt.Printf("'%s' '%s' '%s' '%s'",varbinary.Uint64(0),varbinary.Uint64(1),varbinary.Uint64(257),varbinary.Uint64(65793))
 	// Output:
-	//
-	// 00
-	// 00 00
-	// 00 00 00
+	// '' '00' '00 00' '00 00 00'
 }
-
 

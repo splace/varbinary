@@ -6,7 +6,7 @@ import "fmt"
 
 func TestUint64(t *testing.T) {
 	b:=make([]byte,8)
-	l:=PutUint64(b,Uint64(0))
+	l:=PutUint64(b,0)
 	if l!=0	{t.Errorf("0 Not len 0")}
 	v:=GetUint64(b[:l]...)
 	if v!=0 {t.Errorf("not 0 (%d)",v)}
