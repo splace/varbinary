@@ -12,32 +12,33 @@ type Uint64 uint64
 // string rep as hexadecimal, implementing Stringer
 func (x Uint64) String() string{
 	b:=make([]byte,8,8)
-	n,_:=x.Write(b)
+	n,_:=x.Read(b)
 	return fmt.Sprintf("% X",b[:n])
 }
 
 var bufErr error = errors.New("The Uint64's variable-length binary encoding can not be put in supplied Buffer.")
 
-// write into the provided []byte the representation of Uint64, implementing io.Writer.
-func (u *Uint64) Write(b []byte) (n int , err error){
-    defer func() {
-        if r := recover(); r != nil {
-        	err=bufErr
-        }
-    }()
-	return PutUint64(b,*u),nil
-}
-
-var encErr error = errors.New("Buffer does not represent a valid binary encoding.")
-
-// read a Uint64 from the provided representation, implementing io.Reader
-func (u Uint64) Read(b []byte) (int , error){
-	u=GetUint64(b...)
+// write from the provided []byte, implementing io.Writer.
+func (u *Uint64) Write(b []byte) (int , error){
+	v:=GetUint64(b...)
+	u=&v
 	if len(b)>7 {
 		if b[7]==0xff {return 8,encErr}
 		return 8,io.EOF
 	}
 	return len(b),io.EOF
+}
+
+var encErr error = errors.New("Buffer does not represent a valid binary encoding.")
+
+// read a representation, implementing io.Reader
+func (u Uint64) Read(b []byte) (n int , err error){
+    defer func() {
+        if r := recover(); r != nil {
+        	err=bufErr
+        }
+    }()
+	return PutUint64(b,u),nil
 }
 
 
@@ -153,5 +154,4 @@ func (x Uint64) Truncate(c int) Uint64{
 	n := PutUint64(buf,x)
 	return GetUint64(buf[:n-c]...)
 }
-
 
