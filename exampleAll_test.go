@@ -9,7 +9,7 @@ import "log"
 import "io"
 import "path/filepath"
 
-// uint64's persister: puts all values with the same encoding length in the same file, this means slice order is lost. Up too 8 files named named after their contents individual lengths
+// persistance for uint64's : puts all values with the same encoding length in the same file, this means slice order is lost. Up too 8 files named after their contents individual lengths
 // compact data representation if values biased toward small numbers.
 func Example() {
 	dir, err := ioutil.TempDir("", "Uint64")
