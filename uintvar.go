@@ -18,7 +18,7 @@ func (x Uint64) String() string{
 
 var bufErr error = errors.New("The Uint64's variable-length binary encoding can not be put in supplied Buffer.")
 
-// write from the provided []byte, implementing io.Writer.
+// write representation to the provided []byte, implementing io.Writer.
 func (u *Uint64) Write(b []byte) (int , error){
 	*u=GetUint64(b...)
 	if len(b)>7 {
