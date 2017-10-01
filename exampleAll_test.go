@@ -9,8 +9,8 @@ import "log"
 import "io"
 import "path/filepath"
 
-// slice encoder, puts blacks of the same length encodings into the same file, so with Uint64 up to 8 files, named after that length, slice order is lost.
-// much smaller files if order isn't needed, bias to small numbers and indexing in the file not needed.
+// uint64's persister: puts all values with the same encoding length in the same file, this means slice order is lost. Up too 8 files named named after their contents individual lengths
+// compact data representation if values biased toward small numbers.
 func Example() {
 	dir, err := ioutil.TempDir("", "Uint64")
 	if err != nil {
@@ -20,11 +20,11 @@ func Example() {
 	defer func(){func(dir string,_ error){os.Chdir(dir)}(os.Getwd())}()
 	os.Chdir(dir)
 	
-	set:=[]uint64{1000,1002,1003,1004,1005,10000000}
+	put:=[]uint64{1000,1002,1003,1004,1005,10000000}
 	var files [8]*os.File
 	b:=make([]byte,8,8)
 	var l int
-	for _,v :=range(set){
+	for _,v :=range(put){
 		l=varbinary.PutUint64(b,varbinary.Uint64(v))
 		if files[l]==nil{
 			files[l],err=os.Create(fmt.Sprintf("l%v",l))
@@ -42,7 +42,7 @@ func Example() {
 		if f!=nil{f.Close()}
 	}
 
-	var get []uint64
+	var got []uint64
 	fileInfos,err:=ioutil.ReadDir(dir)
 	if err != nil {
 		log.Fatal(err)
@@ -67,10 +67,10 @@ func Example() {
 			if c64!=int64(l) {
 				break
 			}
-			get=append(get,uint64(i))
+			got=append(got,uint64(i))
 		}
 	}
-	fmt.Println(sum(set...)==sum(get...))
+	fmt.Println(sum(put...)==sum(got...))
 	// Output:
 	// true
 
