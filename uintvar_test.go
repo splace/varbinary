@@ -5,51 +5,31 @@ import "fmt"
 
 
 func TestUint64(t *testing.T) {
+	var tests = []struct {
+	  v Uint64
+	  length int
+	}{
+	  {0, 0},
+	  {255, 1},
+	  {256, 1},
+	  {257, 2},
+	  {123456, 3},
+	  {123456789, 4},
+	  {123456789012, 5},
+	  {123456789012345678, 8},
+	}
+
 	b:=make([]byte,8)
-	l:=PutUint64(b,0)
-	if l!=0	{t.Errorf("0 Not len 0")}
-	v:=GetUint64(b[:l]...)
-	if v!=0 {t.Errorf("not 0 (%d)",v)}
-
-	l=PutUint64(b,Uint64(255))
-	if l!=1	{t.Errorf("255 Not len 1")}
-	v=GetUint64(b[:l]...)
-	if v!=255 {t.Errorf("not 255 (%d)",v)}
-
-	l=PutUint64(b,Uint64(256))
-	if l!=1	{t.Errorf("256 Not len 2")}
-	v=GetUint64(b[:l]...)
-	if v!=256 {t.Errorf("not 256 (%d)",v)}
-
-	l=PutUint64(b,Uint64(257))
-	if l!=2	{t.Errorf("257 Not len 2")}
-	v=GetUint64(b[:l]...)
-	if v!=257 {t.Errorf("not 257 (%d)",v)}
-
-	l=PutUint64(b,Uint64(257))
-	if l!=2	{t.Errorf("257 Not len 2")}
-	v=GetUint64(b[:l]...)
-	if v!=257 {t.Errorf("not 257 (%d)",v)}
-
-	l=PutUint64(b,Uint64(123456))
-	if l!=3	{t.Errorf("123456 Not len 3")}
-	v=GetUint64(b[:l]...)
-	if v!=123456 {t.Errorf("not 123456 (%d)",v)}
-
-	l=PutUint64(b,Uint64(123456789))
-	if l!=4	{t.Errorf("123456789 Not len 4")}
-	v=GetUint64(b[:l]...)
-	if v!=123456789 {t.Errorf("not 123456789 (%d)",v)}
-
-	l=PutUint64(b,Uint64(123456789012))
-	if l!=5	{t.Errorf("123456789012 Not len 5")}
-	v=GetUint64(b[:l]...)
-	if v!=123456789012 {t.Errorf("not 123456789012 (%d)",v)}
-
-	l=PutUint64(b,Uint64(123456789012345678))
-	if l!=8	{t.Errorf("123456789012345678 Not len 8")}
-	v=GetUint64(b[:l]...)
-	if v!=123456789012345678 {t.Errorf("not 123456789012345678 (%d)",v)}
+	for _, tt := range tests {
+		l:=PutUint64(b,tt.v)
+		if l != tt.length {
+			t.Errorf("%v length %v",tt,l)
+		}
+		v:=GetUint64(b[:l]...)
+		if v != tt.v {
+			t.Errorf("%v encoded/decoded to %v",tt,l)
+		}
+	}		
 }
 
 func TestUint64Encode(t *testing.T) {
@@ -85,4 +65,5 @@ func TestUint64AppendTruncate(t *testing.T) {
 	v=Uint64.Truncate(v,1)
 	if fmt.Sprintf("%d",v)!="0"{t.Errorf("not '0' (%d)",v)}
 }
+
 
