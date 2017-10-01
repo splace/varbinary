@@ -20,8 +20,7 @@ var bufErr error = errors.New("The Uint64's variable-length binary encoding can 
 
 // write from the provided []byte, implementing io.Writer.
 func (u *Uint64) Write(b []byte) (int , error){
-	v:=GetUint64(b...)
-	u=&v
+	*u=GetUint64(b...)
 	if len(b)>7 {
 		if b[7]==0xff {return 8,encErr}
 		return 8,io.EOF
