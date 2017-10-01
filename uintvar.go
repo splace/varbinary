@@ -26,7 +26,7 @@ func (u *Uint64) Write(b []byte) (int , error){
 		if b[7]==0xff {return 8,encErr}
 		return 8,io.EOF
 	}
-	return len(b),io.EOF
+	return len(b),nil
 }
 
 var encErr error = errors.New("Buffer does not represent a valid binary encoding.")
@@ -38,7 +38,7 @@ func (u Uint64) Read(b []byte) (n int , err error){
         	err=bufErr
         }
     }()
-	return PutUint64(b,u),nil
+	return PutUint64(b,u),io.EOF
 }
 
 
