@@ -22,18 +22,18 @@ func Example() {
 	
 	put:=[]uint64{1000,1002,1003,1004,1005,10000000}
 	var files [8]*os.File
-	b:=make([]byte,8,8)
+	buf:=make([]byte,8,8)
 	var l int
 	for _,v :=range(put){
-		l=varbinary.PutUint64(b,varbinary.Uint64(v))
+		l=varbinary.PutUint64(buf,varbinary.Uint64(v))  // encode
 		if files[l]==nil{
 			files[l],err=os.Create(fmt.Sprintf("l%v",l))
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-		c,err:=io.Copy(files[l],varbinary.Uint64(v))
-		if err != nil || c!=int64(l){
+		c,err:=files[l].Write(buf[:l]) // different file depending on encoding length
+		if err != nil || c!=l{
 			log.Fatal(err)
 		}
 	
@@ -63,14 +63,14 @@ func Example() {
 		var i varbinary.Uint64
 		var c64 int64
 		for {
-			c64,err=io.Copy(&i,&io.LimitedReader{f,int64(l)})
+			c64,err=io.Copy(&i,&io.LimitedReader{f,int64(l)})  // read only the length that the file contains 
 			if c64!=int64(l) {
 				break
 			}
 			got=append(got,uint64(i))
 		}
 	}
-	fmt.Println(sum(put...)==sum(got...))
+	fmt.Println(sum(put...)==sum(got...))  // equal total even when order changed
 	// Output:
 	// true
 
@@ -82,4 +82,5 @@ func sum(vs ...uint64) (t uint64){
 	}
 	return
 }
+
 
