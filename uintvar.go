@@ -5,11 +5,11 @@ import "fmt"
 import "io"
 
 // variable length binary encoding/decoding of uint64 values.
-// uses all permutations up to the redundant values.
 // the length of the encoding carries information, so some binary encodings are redundant (ones high in the 8-byte range) they don’t have a decoding, due to all possible values already have an encoding thanks to that extra information.
+// no gaps, uses all permutations of bytes up to the redundant values.
 type Uint64 uint64
 
-// string rep as hexadecimal, implementing Stringer
+// string representation is the hexadecimal of the encoding, (implementing Stringer)
 func (x Uint64) String() string {
 	b := make([]byte, 8, 8)
 	n, _ := x.Read(b)
@@ -18,7 +18,7 @@ func (x Uint64) String() string {
 
 var bufErr error = errors.New("The Uint64's variable-length binary encoding can not be put in supplied Buffer.")
 
-// write representation to the provided []byte, implementing io.Writer.
+// write into a Uint64 from a variable length encoding provided in a []byte, (implementing io.Writer.)
 func (u *Uint64) Write(b []byte) (int, error) {
 	*u = GetUint64(b...)
 	if len(b) > 7 {
@@ -32,7 +32,7 @@ func (u *Uint64) Write(b []byte) (int, error) {
 
 var encErr error = errors.New("Buffer does not represent a valid binary encoding.")
 
-// read a representation, implementing io.Reader
+// read a Uint64's encoding into a byte[]. (implementing io.Reader)
 func (u Uint64) Read(b []byte) (n int, err error) {
 	defer func() {
 		if r := recover(); r != nil {
