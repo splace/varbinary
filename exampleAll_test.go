@@ -9,15 +9,15 @@ import "log"
 import "io"
 import "path/filepath"
 
-// persistance for uint64's : puts all values with the same encoding length in the same file, this means slice order is lost. Up too 8 files named after their contents individual lengths
-// compact data representation if values biased toward small numbers.
+// persistance for unordered list/group of uint64's : puts all values with the same encoding length into the same file, to record the their length. Up too 8 files named after their contents individual lengths.
+// could be a compact data representation if the uint64 values are biased toward smaller numbers.
 func Example() {
 	dir, err := ioutil.TempDir("", "Uint64")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(dir) // clean up
-	defer func() { func(dir string, _ error) { os.Chdir(dir) }(os.Getwd()) }()
+	defer os.RemoveAll(dir) // clean up temp files
+	defer func() { func(dir string, _ error) { os.Chdir(dir) }(os.Getwd()) }()  // reset working dir
 	os.Chdir(dir)
 
 	put := []uint64{1000, 1002, 1003, 1004, 1005, 10000000}
@@ -66,7 +66,7 @@ func Example() {
 		var i varbinary.Uint64
 		var c64 int64
 		for {
-			c64, err = io.Copy(&i, &io.LimitedReader{f, int64(l)}) // read only the length that the file contains
+			c64, err = io.Copy(&i, &io.LimitedReader{f, int64(l)}) // read only the length of one encoding in this file.
 			if c64 != int64(l) {
 				break
 			}
@@ -74,7 +74,7 @@ func Example() {
 		}
 	}
 	
-	fmt.Println(sum(put...) == sum(got...)) // equal total even when order changed
+	fmt.Println(sum(put...) == sum(got...)) // same total even when order changed
 	// Output:
 	// true
 }
