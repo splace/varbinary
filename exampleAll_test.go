@@ -25,7 +25,7 @@ func Example() {
 	buf := make([]byte, 8, 8)
 	var l int
 	for _, v := range put {
-		l = varbinary.PutUint64(buf, varbinary.Uint64(v)) // encode
+		l = varbinary.Uint64Put(varbinary.Uint64(v),buf) // encode
 		if files[l] == nil {
 			files[l], err = os.Create(fmt.Sprintf("l%v", l))
 			if err != nil {
@@ -74,7 +74,7 @@ func Example() {
 		}
 	}
 	
-	fmt.Println(sum(put...) == sum(got...)) // same total even when order changed
+	fmt.Println(sum(put...) == sum(got...)) // same total doesn't care about order
 	// Output:
 	// true
 }
@@ -85,4 +85,19 @@ func sum(vs ...uint64) (t uint64) {
 	}
 	return
 }
+/*  Hal3 Mon 9 Oct 23:54:27 BST 2017 go version go1.6.2 linux/amd64
+=== RUN   TestUint64
+--- PASS: TestUint64 (0.00s)
+=== RUN   TestUint64Encode
+--- PASS: TestUint64Encode (0.00s)
+=== RUN   TestUint64Decode
+--- PASS: TestUint64Decode (0.00s)
+=== RUN   Example
+--- PASS: Example (0.00s)
+=== RUN   ExampleUint64_String
+--- PASS: ExampleUint64_String (0.00s)
+PASS
+ok  	_/home/simon/Dropbox/github/working/varbinary	0.003s
+Mon 9 Oct 23:54:28 BST 2017
+*/
 
