@@ -1,14 +1,15 @@
 package varbinary
+// variable length binary encoding/decoding integer values.
+// differs from other techniques in it uses all permutations of bytes. (up to the redundant states.)
+// an encodings length, (in bytes not bits), carries information, it is not carried in the binary data itself, so to decode the length is required to be known.
+// some binary states are never produced as an encoding, here they are redundant and don’t have a decoding.
+// (redundant states occur due to the extra information carried in the variable length.)
 
 import "errors"
 import "fmt"
 import "io"
 
-// variable length binary encoding/decoding of uint64 values.
-// differs from other techniques in it uses all permutations of bytes. (up to the redundant states.)
-// an encodings length, (in bytes not nits), carries information, it is not carried in the binary data itself, so to decode the length is required to be known.
-// some binary states are never produced as an encoding, here they are redundant and don’t have a decoding.
-// (redundant states occur due to the extra information carried in the variable length.)
+// Uint64 unables variable length binary encoding/decoding of uint64 values.
 // implements: io.MarshalBinary,io.UnmarshalBinary,io.Reader (provided buffer needs to be long enough for encoding)
 type Uint64 uint64
 
@@ -22,7 +23,20 @@ func (x Uint64) String() string {
 	return fmt.Sprintf("% X", b[:n])
 }
 
-// decode a Uint64 into the provided []byte.  (implementing io.Writer.)
+// encode a Uint64's into a provided byte[]. (implementing io.Reader)
+// error returned if buffer size not big enough to contain the encoding.
+func (u *Uint64) Read(b []byte) (n int, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = bufErr
+		}
+	}()
+	
+	return Uint64Put(*u,b), io.EOF
+}
+
+// decode a Uint64 from the provided []byte.  (implementing io.Writer.)
+// error returned if value is unused, redundant, encoding
 func (u *Uint64) Write(b []byte) (int, error) {
 	*u = Uint64Decoder(b...)
 	if len(b) > 7 {
@@ -101,16 +115,6 @@ func (u *Uint64) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-// read a Uint64's encoding into a byte[]. (implementing io.Reader)
-func (u *Uint64) Read(b []byte) (n int, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = bufErr
-		}
-	}()
-	
-	return Uint64Put(*u,b), io.EOF
-}
 
 // return the Uint64 represented by some bytes
 func Uint64Decoder(b ...byte) Uint64 {
