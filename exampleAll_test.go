@@ -85,19 +85,4 @@ func sum(vs ...uint64) (t uint64) {
 	}
 	return
 }
-/*  Hal3 Mon 9 Oct 23:54:27 BST 2017 go version go1.6.2 linux/amd64
-=== RUN   TestUint64
---- PASS: TestUint64 (0.00s)
-=== RUN   TestUint64Encode
---- PASS: TestUint64Encode (0.00s)
-=== RUN   TestUint64Decode
---- PASS: TestUint64Decode (0.00s)
-=== RUN   Example
---- PASS: Example (0.00s)
-=== RUN   ExampleUint64_String
---- PASS: ExampleUint64_String (0.00s)
-PASS
-ok  	_/home/simon/Dropbox/github/working/varbinary	0.003s
-Mon 9 Oct 23:54:28 BST 2017
-*/
 

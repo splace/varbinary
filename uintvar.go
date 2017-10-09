@@ -1,4 +1,5 @@
 package varbinary
+
 // variable length binary encoding/decoding integer values.
 // differs from other techniques in it uses all permutations of bytes. (up to the redundant states.)
 // an encodings length, (in bytes not bits), carries information, it is not carried in the binary data itself, so to decode the length is required to be known.
@@ -31,8 +32,8 @@ func (u *Uint64) Read(b []byte) (n int, err error) {
 			err = bufErr
 		}
 	}()
-	
-	return Uint64Put(*u,b), io.EOF
+
+	return Uint64Put(*u, b), io.EOF
 }
 
 // decode a Uint64 from the provided []byte.  (implementing io.Writer.)
@@ -40,19 +41,20 @@ func (u *Uint64) Read(b []byte) (n int, err error) {
 func (u *Uint64) Write(b []byte) (int, error) {
 	*u = Uint64Decoder(b...)
 	if len(b) > 7 {
-		if *u>Uint64(0x0101010101010101){return 0,decErr}
+		if *u > Uint64(0x0101010101010101) {
+			return 0, decErr
+		}
 		return 8, io.EOF
 	}
 	return len(b), nil
 }
 
-
-func (u *Uint64) MarshalBinary() (data []byte, err error){
-	return Uint64Encoder(*u),nil
+func (u *Uint64) MarshalBinary() (data []byte, err error) {
+	return Uint64Encoder(*u), nil
 }
 
 // return the binary encoding of a Uint64
-func Uint64Encoder(u Uint64) []byte{
+func Uint64Encoder(u Uint64) []byte {
 	if u == 0 {
 		return []byte{}
 	}
@@ -62,59 +64,60 @@ func Uint64Encoder(u Uint64) []byte{
 	}
 	if u < 0x010101 {
 		u -= 0x0101
-		return []byte{uint8(u),uint8(u >> 8)}
+		return []byte{uint8(u), uint8(u >> 8)}
 	}
 	if u < 0x01010101 {
 		u -= 0x010101
-		return []byte{uint8(u),uint8(u >> 8),uint8(u >> 16)}
+		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16)}
 	}
 	if u < 0x0101010101 {
 		u -= 0x01010101
-		return []byte{uint8(u),uint8(u >> 8),uint8(u >> 16),uint8(u >> 24)}
+		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24)}
 	}
 	if u < 0x010101010101 {
 		u -= 0x0101010101
-		return []byte{uint8(u),uint8(u >> 8),uint8(u >> 16),uint8(u >> 24),uint8(u >> 32)}
+		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32)}
 	}
 	if u < 0x01010101010101 {
 		u -= 0x010101010101
-		return []byte{uint8(u),uint8(u >> 8),uint8(u >> 16),uint8(u >> 24),uint8(u >> 32), uint8(u >> 40)}
+		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32), uint8(u >> 40)}
 	}
 	if u < 0x0101010101010101 {
 		u -= 0x01010101010101
-		return []byte{uint8(u),uint8(u >> 8),uint8(u >> 16),uint8(u >> 24),uint8(u >> 32), uint8(u >> 40),uint8(u >> 48)}
+		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32), uint8(u >> 40), uint8(u >> 48)}
 	}
 	u -= 0x0101010101010101
-	return []byte{uint8(u),uint8(u >> 8),uint8(u >> 16),uint8(u >> 24),uint8(u >> 32), uint8(u >> 40),uint8(u >> 48),uint8(u >> 56)}
+	return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32), uint8(u >> 40), uint8(u >> 48), uint8(u >> 56)}
 }
 
 func (u *Uint64) UnmarshalBinary(data []byte) error {
 	switch len(data) {
 	case 0:
-		*u= Uint64(0)
+		*u = Uint64(0)
 	case 1:
-		*u= Uint64(0x1 + uint64(data[0]))
+		*u = Uint64(0x1 + uint64(data[0]))
 	case 2:
-		*u= Uint64(0x0101 + uint64(data[0]) + uint64(data[1])<<8)
+		*u = Uint64(0x0101 + uint64(data[0]) + uint64(data[1])<<8)
 	case 3:
-		*u= Uint64(0x010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16)
+		*u = Uint64(0x010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16)
 	case 4:
-		*u= Uint64(0x01010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24)
+		*u = Uint64(0x01010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24)
 	case 5:
-		*u= Uint64(0x0101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32)
+		*u = Uint64(0x0101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32)
 	case 6:
-		*u= Uint64(0x010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40)
+		*u = Uint64(0x010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40)
 	case 7:
-		*u= Uint64(0x01010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48)
+		*u = Uint64(0x01010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48)
 	case 8:
-		*u= Uint64(0x0101010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48 + uint64(data[7])<<56)
-		if *u<Uint64(0x0101010101010101){return decErr}
+		*u = Uint64(0x0101010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48 + uint64(data[7])<<56)
+		if *u < Uint64(0x0101010101010101) {
+			return decErr
+		}
 	default:
 		return decErr
 	}
 	return nil
 }
-
 
 // return the Uint64 represented by some bytes
 func Uint64Decoder(b ...byte) Uint64 {
@@ -141,7 +144,7 @@ func Uint64Decoder(b ...byte) Uint64 {
 }
 
 // put the representation of a Uint64 into the provided []byte
-func Uint64Put(x Uint64,b []byte) int {
+func Uint64Put(x Uint64, b []byte) int {
 	if x == 0 {
 		return 0
 	}
