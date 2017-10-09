@@ -41,7 +41,7 @@ func (u *Uint64) Read(b []byte) (n int, err error) {
 func (u *Uint64) Write(b []byte) (int, error) {
 	*u = Uint64Decoder(b...)
 	if len(b) > 7 {
-		if *u > Uint64(0x0101010101010101) {
+		if *u > Uint64(0xFEFEFEFEFEFEFEFE) {
 			return 0, decErr
 		}
 		return 8, io.EOF
@@ -110,7 +110,7 @@ func (u *Uint64) UnmarshalBinary(data []byte) error {
 		*u = Uint64(0x01010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48)
 	case 8:
 		*u = Uint64(0x0101010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48 + uint64(data[7])<<56)
-		if *u < Uint64(0x0101010101010101) {
+		if *u < Uint64(0x0101010101010101) {  // must have wrapped
 			return decErr
 		}
 	default:

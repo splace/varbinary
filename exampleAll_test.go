@@ -25,18 +25,21 @@ func Example() {
 	buf := make([]byte, 8, 8)
 	var l int
 	for _, v := range put {
-		l = varbinary.Uint64Put(varbinary.Uint64(v),buf) // encode
+		u := varbinary.Uint64(v)
+		l,_:=u.Read(buf)
 		if files[l] == nil {
 			files[l], err = os.Create(fmt.Sprintf("l%v", l))
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-		c, err := files[l].Write(buf[:l]) // different file depending on encoding length
-		if err != nil || c != l {
+		c, err := files[l].Write(buf[:l]) // saved to different file depending on encoding length
+		if err != nil {
 			log.Fatal(err)
 		}
-
+		if c != l {
+			log.Fatal(c,l)
+		}
 	}
 	for _, f := range files {
 		if f != nil {
@@ -57,7 +60,7 @@ func Example() {
 			log.Fatal(err)
 		}
 		if l != 0 && fi.Size()%int64(l) != 0 {
-			log.Fatal("Wrong file size")
+			log.Fatal("File size not whole number of encodings.")
 		}
 		f, err := os.Open(filepath.Join(dir, fi.Name()))
 		if err != nil {
