@@ -21,11 +21,12 @@ func TestUint64(t *testing.T) {
 
 	b:=make([]byte,8)
 	for _, tt := range tests {
-		l:=PutUint64(b,tt.v)
+		l:=Uint64Put(tt.v,b)
 		if l != tt.length {
 			t.Errorf("%v length %v",tt,l)
 		}
-		v:=GetUint64(b[:l]...)
+		var v Uint64
+		(*Uint64).UnmarshalBinary(&v,b[:l])
 		if v != tt.v {
 			t.Errorf("%v encoded/decoded to %v",tt,l)
 		}
@@ -49,21 +50,13 @@ func TestUint64Encode(t *testing.T) {
 }
 
 func TestUint64Decode(t *testing.T) {
-	if GetUint64()!=0 {t.Errorf("empty slice not 0 (%d)",GetUint64())}
-	if GetUint64(0x00)!=1 {t.Errorf("empty 0x00 not 1 (%d)",GetUint64(0x00))}
-	if GetUint64(0x00,0x00)!=257 {t.Errorf("empty []byte{0x00,0x00} not 257 (%d)",GetUint64(0x00,0x00))}
+	if Uint64Decoder([]byte{}...)!=0 {t.Errorf("empty slice not 0 (%d)",Uint64Decoder([]byte{}...))}
+	if Uint64Decoder([]byte{0x00}...)!=1 {t.Errorf("empty 0x00 not 1 (%d)",Uint64Decoder([]byte{0x00}...))}
+	if Uint64Decoder([]byte{0x00,0x00}...)!=257 {t.Errorf("empty []byte{0x00,0x00} not 257 (%d)",Uint64Decoder([]byte{0x00,0x00}...))}
 
-	v:=GetUint64(0xfe,0xfe,0xfe,0xfe,0xfe,0xfe,0xfe,0xfe)
+	v:=Uint64Decoder([]byte{0xfe,0xfe,0xfe,0xfe,0xfe,0xfe,0xfe,0xfe}...)
 	if fmt.Sprintf("%d",v)!="18446744073709551615"{t.Errorf("not '18446744073709551615' (%d)",v)}
 	v++
 	if fmt.Sprintf("%d",v)!="0"{t.Errorf("not '0' (%d)",v)}
 }
-
-func TestUint64AppendTruncate(t *testing.T) {
-	v:=Uint64.Append(Uint64(0),0x00)
-	if fmt.Sprintf("%d",v)!="1"{t.Errorf("not '1' (%d)",v)}
-	v=Uint64.Truncate(v,1)
-	if fmt.Sprintf("%d",v)!="0"{t.Errorf("not '0' (%d)",v)}
-}
-
 
