@@ -10,8 +10,8 @@ import "errors"
 import "fmt"
 import "io"
 
-// Uint64 unables variable length binary encoding/decoding of uint64 values.
-// implements: io.MarshalBinary,io.UnmarshalBinary,io.Reader (provided buffer needs to be long enough for encoding)
+// Uint64 enables variable length binary encoding/decoding of uint64 values.
+// implements: encoding.MarshalBinary,encoding.UnmarshalBinary and io.ReadWriter.
 type Uint64 uint64
 
 var decErr error = errors.New("Bytes do not represent an encoding.")
@@ -32,7 +32,6 @@ func (u *Uint64) Read(b []byte) (n int, err error) {
 			err = bufErr
 		}
 	}()
-
 	return Uint64Put(*u, b), io.EOF
 }
 
@@ -54,40 +53,9 @@ func (u *Uint64) MarshalBinary() (data []byte, err error) {
 }
 
 // return the binary encoding of a Uint64
-func Uint64Encoder(u Uint64) []byte {
-	if u == 0 {
-		return []byte{}
-	}
-	if u < 0x0101 {
-		u -= 1
-		return []byte{uint8(u)}
-	}
-	if u < 0x010101 {
-		u -= 0x0101
-		return []byte{uint8(u), uint8(u >> 8)}
-	}
-	if u < 0x01010101 {
-		u -= 0x010101
-		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16)}
-	}
-	if u < 0x0101010101 {
-		u -= 0x01010101
-		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24)}
-	}
-	if u < 0x010101010101 {
-		u -= 0x0101010101
-		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32)}
-	}
-	if u < 0x01010101010101 {
-		u -= 0x010101010101
-		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32), uint8(u >> 40)}
-	}
-	if u < 0x0101010101010101 {
-		u -= 0x01010101010101
-		return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32), uint8(u >> 40), uint8(u >> 48)}
-	}
-	u -= 0x0101010101010101
-	return []byte{uint8(u), uint8(u >> 8), uint8(u >> 16), uint8(u >> 24), uint8(u >> 32), uint8(u >> 40), uint8(u >> 48), uint8(u >> 56)}
+func Uint64Encoder(u Uint64) (b []byte) {
+	b=make([]byte,8,8)
+	return b[:Uint64Put(u,b)] 
 }
 
 func (u *Uint64) UnmarshalBinary(data []byte) error {
@@ -120,30 +88,12 @@ func (u *Uint64) UnmarshalBinary(data []byte) error {
 }
 
 // return the Uint64 represented by some bytes
-func Uint64Decoder(b ...byte) Uint64 {
-	switch len(b) {
-	case 0:
-		return Uint64(0)
-	case 1:
-		return Uint64(0x1 + uint64(b[0]))
-	case 2:
-		return Uint64(0x0101 + uint64(b[0]) + uint64(b[1])<<8)
-	case 3:
-		return Uint64(0x010101 + uint64(b[0]) + uint64(b[1])<<8 + uint64(b[2])<<16)
-	case 4:
-		return Uint64(0x01010101 + uint64(b[0]) + uint64(b[1])<<8 + uint64(b[2])<<16 + uint64(b[3])<<24)
-	case 5:
-		return Uint64(0x0101010101 + uint64(b[0]) + uint64(b[1])<<8 + uint64(b[2])<<16 + uint64(b[3])<<24 + uint64(b[4])<<32)
-	case 6:
-		return Uint64(0x010101010101 + uint64(b[0]) + uint64(b[1])<<8 + uint64(b[2])<<16 + uint64(b[3])<<24 + uint64(b[4])<<32 + uint64(b[5])<<40)
-	case 7:
-		return Uint64(0x01010101010101 + uint64(b[0]) + uint64(b[1])<<8 + uint64(b[2])<<16 + uint64(b[3])<<24 + uint64(b[4])<<32 + uint64(b[5])<<40 + uint64(b[6])<<48)
-	default:
-		return Uint64(0x0101010101010101 + uint64(b[0]) + uint64(b[1])<<8 + uint64(b[2])<<16 + uint64(b[3])<<24 + uint64(b[4])<<32 + uint64(b[5])<<40 + uint64(b[6])<<48 + uint64(b[7])<<56)
-	}
+func Uint64Decoder(b ...byte) (u Uint64) {
+	(*Uint64).UnmarshalBinary(&u, b)
+	return
 }
 
-// put the representation of a Uint64 into the provided []byte
+// put the encoding of a Uint64 into the provided []byte, will panic if buffer not large enough.
 func Uint64Put(x Uint64, b []byte) int {
 	if x == 0 {
 		return 0
