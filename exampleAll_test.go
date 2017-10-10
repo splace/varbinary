@@ -6,10 +6,8 @@ import "fmt"
 import "io/ioutil"
 import "os"
 import "log"
-import "io"
-import "path/filepath"
 
-// persistance for unordered list/group of uint64's : puts all values with the same encoding length into the same file, to record the their length. Up too 8 files named after their contents individual lengths.
+// persistance for unordered list/group of uint64's : puts all values with the same encoding length into the same file. Up too 8 files named after their contents individual lengths.
 // could be a compact data representation if the uint64 values are biased toward smaller numbers.
 func Example() {
 	dir, err := ioutil.TempDir("", "Uint64")
@@ -20,70 +18,75 @@ func Example() {
 	defer func() { func(dir string, _ error) { os.Chdir(dir) }(os.Getwd()) }()  // reset working dir
 	os.Chdir(dir)
 
-	put := []uint64{1000, 1002, 1003, 1004, 1005, 10000000}
-	var files [8]*os.File
-	buf := make([]byte, 8, 8)
-	var l int
-	for _, v := range put {
-		u := varbinary.Uint64(v)
-		l,_:=u.Read(buf)
-		if files[l] == nil {
-			files[l], err = os.Create(fmt.Sprintf("l%v", l))
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		c, err := files[l].Write(buf[:l]) // saved to different file depending on encoding length
-		if err != nil {
-			log.Fatal(err)
-		}
-		if c != l {
-			log.Fatal(c,l)
-		}
-	}
-	for _, f := range files {
-		if f != nil {
-			f.Close()
-		}
-	}
+	set:=map[uint64]struct{}{1000:{}, 1002:{}, 1003:{}, 1004:{}, 1005:{}, 10000000:{}}
+	Put(set)
+	gotSet:=Get()
 
-	// read back in	
-	var got []uint64
-	fileInfos, err := ioutil.ReadDir(dir)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, fi := range fileInfos {
-		c, err := fmt.Sscanf(fi.Name(), "l%v", &l)
-		if err != nil || c != 1 {
-			log.Fatal(err)
-		}
-		if l != 0 && fi.Size()%int64(l) != 0 {
-			log.Fatal("File size not whole number of encodings.")
-		}
-		f, err := os.Open(filepath.Join(dir, fi.Name()))
-		if err != nil {
-			log.Fatal(err)
-		}
-		var i varbinary.Uint64
-		var c64 int64
-		for {
-			c64, err = io.Copy(&i, &io.LimitedReader{f, int64(l)}) // read only the length of one encoding in this file.
-			if c64 != int64(l) {
-				break
-			}
-			got = append(got, uint64(i))
-		}
-	}
-	
-	fmt.Println(sum(put...) == sum(got...)) // same total doesn't care about order
+	fmt.Println(sum(set) == sum(gotSet)) 
 	// Output:
 	// true
 }
 
-func sum(vs ...uint64) (t uint64) {
-	for _, v := range vs {
+func Put(p map[uint64]struct{}){
+	var files [8]*os.File
+	for v := range p {
+		b,_ := (*varbinary.Uint64).MarshalBinary((*varbinary.Uint64)(&v))
+		// use/make a file depending on encoding length
+		if files[len(b)] == nil {
+			var err error
+			files[len(b)], err = os.Create(fmt.Sprintf("l%v", len(b)))
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer files[len(b)].Close()
+		}
+		c, err := files[len(b)].Write(b) 
+		if err != nil {
+			log.Fatal(err)
+		}
+		if c != len(b) {
+			log.Fatal(c,len(b))
+		}
+	}
+}
+
+func Get() (p map[uint64]struct{}){
+	p=make(map[uint64]struct{})
+	fileInfos, err := ioutil.ReadDir(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var l int
+	buf := make([]byte,8,8)
+	for _, fi := range fileInfos {
+		// scan file name for length held
+		c, err := fmt.Sscanf(fi.Name(), "l%v", &l)
+		if err != nil || c != 1 {
+			continue
+		}
+		if l != 0 && fi.Size()%int64(l) != 0 {
+			log.Fatal("File size not whole number of encodings.")
+		}
+		f, _ := os.Open(fi.Name())
+		defer f.Close()
+		var v varbinary.Uint64
+		for {
+			n,err := f.Read(buf[:l])
+			if n != l {
+				break
+			}
+			err = v.UnmarshalBinary(buf[:n])
+			if err !=nil {
+				log.Print(err)
+			}
+			p[uint64(v)]=struct{}{}
+		}
+	}
+	return
+}	
+
+func sum(vs map[uint64]struct{}) (t uint64) {
+	for v := range vs {
 		t += v
 	}
 	return
