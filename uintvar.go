@@ -1,6 +1,6 @@
 package varbinary
 
-// variable length binary encoding/decoding integer values.
+// variable length binary Un/Marshaling En/Decoding of integer values.
 // differs from other techniques in it uses all permutations of bytes. (up to the redundant states.)
 // an encodings length, (in bytes not bits), carries information, it is not carried in the binary data itself, so to decode the length is required to be known.
 // some binary states are never produced as an encoding, here they are redundant and don’t have a decoding.
@@ -14,8 +14,8 @@ import "io"
 // implements: encoding.MarshalBinary,encoding.UnmarshalBinary and io.ReadWriter.
 type Uint64 uint64
 
-var decErr error = errors.New("Bytes do not represent an encoding.")
-var bufErr error = errors.New("Encoding can not be put in supplied Buffer.")
+var DecErr error = errors.New("Bytes do not represent an encoding.")
+var BufErr error = errors.New("Encoding can not be put in supplied Buffer.")
 
 // string representation is the hexadecimal of the encoding, (implementing Stringer)
 func (x Uint64) String() string {
@@ -24,24 +24,24 @@ func (x Uint64) String() string {
 	return fmt.Sprintf("% X", b[:n])
 }
 
-// encode a Uint64's into a provided byte[]. (implementing io.Reader)
-// error returned if buffer size not big enough to contain the encoding.
+// read an Uint64's encoding into a provided byte[]. (implementing io.Reader)
+// BufErr returned if buffer size not big enough to contain the encoding.
 func (u *Uint64) Read(b []byte) (n int, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = bufErr
+			err = BufErr
 		}
 	}()
 	return Uint64Put(*u, b), io.EOF
 }
 
-// decode a Uint64 from the provided []byte.  (implementing io.Writer.)
-// error returned if value is unused, redundant, encoding
+// write an Uint64 from an encoding provided in a []byte.  (implementing io.Writer.)
+// DecErr returned if value is an unused, redundant, encoding
 func (u *Uint64) Write(b []byte) (int, error) {
 	*u = Uint64Decoder(b...)
 	if len(b) > 7 {
 		if *u > Uint64(0xFEFEFEFEFEFEFEFE) {
-			return 0, decErr
+			return 0, DecErr
 		}
 		return 8, io.EOF
 	}
@@ -79,10 +79,10 @@ func (u *Uint64) UnmarshalBinary(data []byte) error {
 	case 8:
 		*u = Uint64(0x0101010101010101 + uint64(data[0]) + uint64(data[1])<<8 + uint64(data[2])<<16 + uint64(data[3])<<24 + uint64(data[4])<<32 + uint64(data[5])<<40 + uint64(data[6])<<48 + uint64(data[7])<<56)
 		if *u < Uint64(0x0101010101010101) {  // must have wrapped
-			return decErr
+			return DecErr
 		}
 	default:
-		return decErr
+		return DecErr
 	}
 	return nil
 }
