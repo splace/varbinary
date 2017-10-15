@@ -6,4 +6,4 @@ Installation:
 
      go get github.com/splace/varbinary
 
-Used by me to produce all permutation of variable length bytes, for [Hashing](https://github.com/splace/Hashing)
+Used by me to produce all permutation of variable length bytes, for [Hashing](https://github.com/splace/hashing)
