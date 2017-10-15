@@ -1,10 +1,10 @@
 package varbinary
 
-// variable length binary Un/Marshaling En/Decoding of integer values.
+// variable length binary (Un)Marshaling En(De)coding of integer values.
 // differs from other techniques in it uses all permutations of bytes. (up to the redundant states.)
-// an encodings length, (in bytes not bits), carries information, it is not carried in the binary data itself, so to decode the length is required to be known.
+// an encodings length, (in bytes not bits), is not carried in the binary data itself, so to decode the length is required to be known by some-other means.
 // some binary states are never produced as an encoding, here they are redundant and don’t have a decoding.
-// (redundant states occur due to the extra information carried in the variable length.)
+// the redundant states occur due to the extra information carried in the variable length.
 
 import "errors"
 import "fmt"
@@ -87,7 +87,7 @@ func (u *Uint64) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-// return the Uint64 represented by some bytes
+// return the Uint64 represented by some bytes, ignores decoding error
 func Uint64Decoder(b ...byte) (u Uint64) {
 	(*Uint64).UnmarshalBinary(&u, b)
 	return

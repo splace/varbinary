@@ -65,7 +65,7 @@ func Get() (p map[uint64]struct{}){
 			continue
 		}
 		if l != 0 && fi.Size()%int64(l) != 0 {
-			log.Fatal("File size not whole number of encodings.")
+			log.Fatal("Size indicates file isn't whole number of encodings.")
 		}
 		f, _ := os.Open(fi.Name())
 		defer f.Close()
