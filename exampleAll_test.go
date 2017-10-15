@@ -28,19 +28,19 @@ func Example() {
 }
 
 func Put(p map[uint64]struct{}){
-	var files [8]*os.File
+	var existingFiles [8]*os.File
 	for v := range p {
-		b,_ := (*varbinary.Uint64).MarshalBinary((*varbinary.Uint64)(&v))
+		b,_ := (*varbinary.Uint64)(&v).MarshalBinary()
 		// use/make a file depending on encoding length
-		if files[len(b)] == nil {
+		if existingFiles[len(b)] == nil {
 			var err error
-			files[len(b)], err = os.Create(fmt.Sprintf("l%v", len(b)))
+			existingFiles[len(b)], err = os.Create(fmt.Sprintf("l%v", len(b)))
 			if err != nil {
 				log.Fatal(err)
 			}
-			defer files[len(b)].Close()
+			defer existingFiles[len(b)].Close()
 		}
-		c, err := files[len(b)].Write(b) 
+		c, err := existingFiles[len(b)].Write(b) 
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -59,7 +59,7 @@ func Get() (p map[uint64]struct{}){
 	var l int
 	buf := make([]byte,8,8)
 	for _, fi := range fileInfos {
-		// scan file name for length held
+		// check the file name for the encoding lengths it holds
 		c, err := fmt.Sscanf(fi.Name(), "l%v", &l)
 		if err != nil || c != 1 {
 			continue
