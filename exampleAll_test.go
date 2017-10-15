@@ -18,7 +18,7 @@ func Example() {
 	defer func() { func(dir string, _ error) { os.Chdir(dir) }(os.Getwd()) }()  // reset working dir
 	os.Chdir(dir)
 
-	set:=map[uint64]struct{}{1000:{}, 1002:{}, 1003:{}, 1004:{}, 1005:{}, 10000000:{}}
+	set:=map[uint64]struct{}{0:{}, 1000:{}, 1002:{}, 1003:{}, 1004:{}, 1005:{}, 10000000:{}}
 	Put(set)
 	gotSet:=Get()
 

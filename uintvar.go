@@ -1,8 +1,8 @@
 package varbinary
 
-// variable length binary (Un)Marshaling En(De)coding of integer values.
+// variable length binary encoding/marshaling/readwriting of integer values.
 // differs from other techniques in it uses all permutations of bytes. (up to the redundant states.)
-// an encodings length, (in bytes not bits), is not carried in the binary data itself, so to decode the length is required to be known by some-other means.
+// an encodings length is not carried in the binary data itself, so to decode the length, in bytes, is required to be known by some other means.
 // some binary states are never produced as an encoding, here they are redundant and don’t have a decoding.
 // the redundant states occur due to the extra information carried in the variable length.
 
@@ -11,7 +11,7 @@ import "fmt"
 import "io"
 
 // Uint64 enables variable length binary encoding/decoding of uint64 values.
-// implements: encoding.MarshalBinary,encoding.UnmarshalBinary and io.ReadWriter.
+// implements: encoding.BinaryMarshaler,encoding.BinaryUnmarshaler and io.ReadWriter.
 type Uint64 uint64
 
 var DecErr error = errors.New("Bytes do not represent an encoding.")
