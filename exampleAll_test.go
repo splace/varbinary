@@ -30,6 +30,7 @@ func Example() {
 func Put(p map[uint64]struct{}){
 	var existingFiles [8]*os.File
 	for v := range p {
+		v++ // shift by one to avoid zero needing its own, empty, file
 		b,_ := (*varbinary.Uint64)(&v).MarshalBinary()
 		// use/make a file depending on encoding length
 		if existingFiles[len(b)] == nil {
@@ -79,6 +80,7 @@ func Get() (p map[uint64]struct{}){
 			if err !=nil {
 				log.Print(err)
 			}
+			v-- // undo shift
 			p[uint64(v)]=struct{}{}
 		}
 	}
