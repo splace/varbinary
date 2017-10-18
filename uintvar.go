@@ -23,7 +23,7 @@ func (x Uint64) String() string {
 	return fmt.Sprintf("% X", b[:n])
 }
 
-// read an Uint64's encoding into a provided byte[]. (implementing io.Reader)
+// read an Uint64's encoding into a provided []byte. (implementing io.Reader)
 // BufErr returned if buffer size not big enough to contain the encoding.
 func (u *Uint64) Read(b []byte) (n int, err error) {
 	defer func() {
@@ -34,7 +34,7 @@ func (u *Uint64) Read(b []byte) (n int, err error) {
 	return Uint64Put(*u, b), io.EOF
 }
 
-// write an Uint64 from an encoding provided in a []byte.  (implementing io.Writer.)
+// write to an Uint64 the value encoded in a []byte.  (implementing io.Writer.)
 // DecErr returned if value is an unused, redundant, encoding
 func (u *Uint64) Write(b []byte) (int, error) {
 	*u = Uint64Decoder(b...)
