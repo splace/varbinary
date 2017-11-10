@@ -3,6 +3,7 @@ package varbinary_test
 import "github.com/splace/varbinary"
 
 import "fmt"
+import "io"
 import "io/ioutil"
 import "os"
 import "log"
@@ -72,11 +73,14 @@ func Get() (p map[uint64]struct{}){
 		defer f.Close()
 		var v varbinary.Uint64
 		for {
-			n,err := f.Read(buf[:l])
-			if n != l {
+			_,err := io.ReadFull(f,buf[:l])
+			if err==io.EOF {
 				break
 			}
-			err = v.UnmarshalBinary(buf[:n])
+			if err!=nil{
+				log.Fatal(err)
+			}
+			err = v.UnmarshalBinary(buf[:l])
 			if err !=nil {
 				log.Print(err)
 			}
@@ -93,4 +97,5 @@ func sum(vs map[uint64]struct{}) (t uint64) {
 	}
 	return
 }
+
 
